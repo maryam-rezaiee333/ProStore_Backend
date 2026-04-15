@@ -25,12 +25,16 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             //
-            'name'=> ['required' ,'string','min:3', Rule::unique('products','name')],
-            'price'=> 'required|numaric|min:10|max:19000',
-            'stock'=> 'required|integer|min:1|max:200',
+            // 'name'=> ['required' ,'string','min:3', Rule::unique('products','name')],
+            'name'=> 'nullable|string|min:3',
+            'price'=> 'nullable|decimal|min:20',
+            'stock'=> 'nullable|integer|min:1',
             'brand'=> 'required|string',
             'description'=> 'required|string|min:10',
-            'category'=> 'required|string|min:10',
+            'category'=> 'nullable|string|min:3',
+            'image_url'=> 'nullable|image|mimes: jpg, png, jpeg, gif, webp',
+            'imageable_type'=> 'required|string',
+            'imageable_id'=> 'required|integer',
         ];
     }
 }
