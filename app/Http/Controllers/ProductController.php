@@ -61,12 +61,21 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show(string $id)
     {
         //
-        return response()->json([
-            'data'=> $product,
-        ]);
+         try{
+            $product = Product::findOrFail($id);
+            $product->load(['images',productDetails]);
+            return new ProductResourse($product)
+         }
+         catch(Exception $error){
+                return response()->json(
+                    [
+                        'error'=>$error->getMessage(),                    
+                    ]
+                );
+            }
     }
 
     /**
@@ -90,25 +99,20 @@ class ProductController extends Controller
                  'category'=> $request->category,
                  'brand'=> $request->brand,
                ]);
-               $img_path = null;
+               $images = [];
+               $img_path1 = null;
                $img_path2 = null;
-               if($request->hasFile('image1')){
+               if($request->hasFile('image1') && $request->hasFile('image2')){
                   $img_path1 = $request->file('image1')->store('Product_Images', 'public');
+                  $img_path2 = $request->file('image2')->store('Product_Images', 'public');
                    }
-                   if($request->hasFile('image2')){
-                      $img_path2 = $request->file('image2')->store('Product_Images', 'public');
-                     }
-                $images = Image::where('imageable_type', Product::class)->where('imageable', 'product_id')->get();
-                for($i = 0; count($images)>0; $i++){
-                    if($i == 0){
+                
                         $images->update([
-                            'image_url'=> $img_path,
+                            ['image_url'=> $img_path1,],
+                            ['image_url'=> $img_path2,]
                         ]);
                     }
-                }
-                else{
-
-                }
+              
                 }
                    catch(Exception $error){
                 return response()->json(
