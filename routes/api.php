@@ -10,3 +10,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 // Routes
 Route::apiResource('Products', ProductController::class);
+Route::apiResource('Images', ProductController::class);
