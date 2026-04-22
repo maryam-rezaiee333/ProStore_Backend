@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
-use App\Http\Requests\ProudctUpdateREq;
+use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\productResource;
 use App\Models\Product;
 use Illuminate\Support\Facades\Storage;
@@ -51,10 +51,10 @@ class productController extends Controller
             "image"=> $images,
             "product"=> $product
         ]);
-        }catch(\Exception $e){
+        }catch(\Exception $error){
             return response()->json([
                 "message" => "Product creation failed",
-                "error" => $e->getMessage(),
+                "error" => $error->getMessage(),
             ], 500);
         }
     }
@@ -68,15 +68,22 @@ class productController extends Controller
         // return response()->json([
         //     "data"=> $products,
         // ]);
+        try{
         $product = Product::findOrFail($id)->with(['images', 'productDetails'])->get();
-        return new productResource($product);
+         return new productResource($product);
+    }
+         catch(\Exception $error){
+            return response()->json([
+                "message" => "Product deletion failed",
+                "error" => $error->getMessage(),
+            ], 500);
+         }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(ProudctUpdateREq $request, string $id)
-    {
+    public function update(UpdateProductRequest $request, string $id){
        $product = Product::with(['images' , 'productDetails'])->findOrFail($id);
        $product->update([
         "name"=> $request->name,
@@ -134,10 +141,10 @@ class productController extends Controller
          'message'=> 'Product with id '.$id.' has been deleted seccessfully'  
         ];
     }
-        catch(\Exception $e){
+        catch(\Exception $error){
             return response()->json([
                 "message" => "Product deletion failed",
-                "error" => $e->getMessage(),
+                "error" => $error->getMessage(),
             ], 500);
         }
     }
