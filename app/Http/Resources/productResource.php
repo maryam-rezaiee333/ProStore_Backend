@@ -17,11 +17,11 @@ class productResource extends JsonResource
         return [
             "name"=>$this->name,
             "stock"=>$this->stock,
-            "pricd"=>$this->price,
-            "brand"=>$this->pro_details->brand,
-            "description"=>$this->pro_details->description,
-            "catagory"=>$this->pro_details->catagory,
-            "image"=>$this->images->map(function($images){
+            "price"=>$this->price,
+            "brand"=>$this->productDetails->brand,
+            "description"=>$this->productDetails->description,
+            "catagory"=>$this->productDetails->catagory,
+            "image_url"=>$this->images->map(function($images){
                 return asset('storage/'.$images->img_url);
             }),
         ];
