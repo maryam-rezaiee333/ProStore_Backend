@@ -7,16 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Image extends Model
 {
+    protected $fillable = [
+        "img_url",
+        "imageable_id",
+        "imageable_type"
+    ];
     /** @use HasFactory<\Database\Factories\ImageFactory> */
     use HasFactory;
-    protected $fillable = [
-        'image_url',
-        'imageable_type',
-        'imageable_id',
-    ];
-
-    // Relationships
-    public function product(){
+    public function imageable(){
         return $this->morphTo();
     }
 }

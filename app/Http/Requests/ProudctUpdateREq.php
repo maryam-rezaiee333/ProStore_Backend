@@ -6,14 +6,14 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class ProductRequest extends FormRequest
+class ProudctUpdateREq extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -25,13 +25,16 @@ class ProductRequest extends FormRequest
     {
         return [
             //
-            'name'=> ['required' ,'string','min:3', Rule::unique('products','name')],
-            'price'=> 'required|integer|min:10|max:19000',
-            'stock'=> 'required|integer|min:1|max:200',
-            'brand'=> 'required|string',
-            'description'=> 'required|string|min:10',
-            'category'=> 'required|string|min:10',
-            'img_url'=>'required|image|mimies:300|'
+             'name'=> 'nullable|string|min:3',
+            'price'=> 'nullable|decimal|min:10|max:19000',
+            'stock'=> 'nullable|integer|min:1|max:200',
+            'brand'=> 'nullable|string|min:3',
+            'description'=> 'nullable|string|min:10',
+            'category'=> 'nullable|string|min:10',
+            'img_url'=>"nullable|string",
+            'imageable_type'=>'required|string',
+            'imageable_id'=>'required|string'
+
         ];
     }
 }

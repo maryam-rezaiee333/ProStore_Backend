@@ -3,25 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
-use App\Models\Image;
+use App\Http\Requests\ProudctUpdateREq;
+use App\Http\Resources\productResource;
 use App\Models\Product;
-use App\Models\Product_Deltail;
-use Exception;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
-class ProductController extends Controller
+class productController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
-        $product = Product::with(['productDetails', 'images', 'reviews'])->paginate(10);
-        return response()->json([
-            'product'=> $product,
-            'message'=> 'Success'
-        ],202);
+        $product = Product::with(['productDetails' , 'images'])->paginate(5);
+        return productResource::collection($product);
     }
 
     /**
@@ -29,33 +24,39 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        //
-        $product = new Product();
-        $product->create([
-            'name'=> $request->name,
-            'stock'=> $request->stock,
-            'price'=> $request->price,
+        try{
+        $product = Product::create([
+            "name" => $request->name,
+            "stock" => $request->stock,
+            "price" => $request->price,
         ]);
         $product->save();
-
-         $productDetails = new Product_Deltail();
-         $productDetails->create([
-            'brand'=>$request->brand,
-            'description'=>$request->description,
-            'category'=>$request->category,
-            'product_id'=>$product->id,
-         ]);
-         $path = null;
-         if($request->hasFile('image')){
-            $path = $request->file('image')->store('Products_Images', 'public');
-         }
-         $image = new Image();
-         $image->create([
-            'image_url'=>$path,
-            'imageable_id'=> $product->id,
-            'imageable_type'=> Product::class,
-         ]);
-         $image->save();
+        $product->productDetails()->create([
+            "brand" => $request->brand,
+            "description" => $request->description,
+            "catagory" => $request->cat,
+        ]);
+        $images = [];
+        if($request->hasFile('image1')){
+           $images[] = ["img_url" => $request->file('image1')->store('images','public')];
+        }
+        if($request->hasFile('image2')){
+           $images[] = ["img_url" => $request->file('image2')->store('images','public')];
+        }
+        if(!empty($images)){
+            $product->images()->createMany($images);
+        }
+        return response()->json([
+            "message" => "Product created successfully",
+            "image"=> $images,
+            "product"=> $product
+        ]);
+        }catch(\Exception $e){
+            return response()->json([
+                "message" => "Product creation failed",
+                "error" => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -63,73 +64,50 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        //
-         try{
-            $product = Product::findOrFail($id);
-            $product->load(['images',productDetails]);
-            return new ProductResourse($product)
-         }
-         catch(Exception $error){
-                return response()->json(
-                    [
-                        'error'=>$error->getMessage(),                    
-                    ]
-                );
-            }
+        $products = Product::findOrFail($id);
+        return response()->json([
+            "data"=> $products,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Product $request, string $id)
+    public function update(ProudctUpdateREq $request, string $id)
     {
-        //
-            try{
-               $product = Product::findOrFail($id)->with('images','productDetails')->first();
-               $product->update([
-                'name'=> $request->name,
-                'stock'=> $request->stock,
-                'price'=> $request->price,
-               ]);
-               $product->save();
-
-               $productDetail = Product_Deltail::where('product_id', $product->id)->first();
-               $productDetail->update([
-                 'description'=> $request->description,
-                 'category'=> $request->category,
-                 'brand'=> $request->brand,
-               ]);
-               $images = [];
-               $img_path1 = null;
-               $img_path2 = null;
-               if($request->hasFile('image1') && $request->hasFile('image2')){
-                  $img_path1 = $request->file('image1')->store('Product_Images', 'public');
-                  $img_path2 = $request->file('image2')->store('Product_Images', 'public');
-                   }
-                
-                        $images->update([
-                            ['image_url'=> $img_path1,],
-                            ['image_url'=> $img_path2,]
-                        ]);
-                    }
-              
-                }
-                   catch(Exception $error){
-                return response()->json(
-                    [
-                        'error'=>$error->getMessage(),                    
-                    ]
-                );
+       $product = Product::with(['images' , 'productDetails'])->findOrFail($id);
+       $product->update([
+        "name"=> $request->name,
+        "stock"=> $request->stock,
+        "price"=> $request->price,
+       ]);
+            
+            $product->productDetails()->update([
+                "brand" => $request->brand,
+                "description" => $request->description,
+                "category" => $request->category,
+            ]);
+           $path1 = null ;
+           $path2 = null ;
+           if($request->hasFile('image1') && $request->hasFile('image2')){
+            $path1 = $request->file('image1')->store('images' , 'public');
+            $path2 = $request->file('image2')->store('images' , 'public');
+           }
+           foreach($product->images() as $image){
+            if(Storage::disk("public")->exists($image->img_url)){
+                Storage::disk('public')->delete($image->img_url);
             }
-        //          if($request->user()->tokenCan('update-book')){
-    //         abort('333', 'You are not allowed!');
-    //     }
-    //    $book->update($request->validated());
-
-       
-    //    $book->load('author');
-    //    return new BookResource($book);
-
+           }
+           $product->load(['images' , 'productDetails']);
+           $product->images()->delete();
+            $product->images()->createMany([
+                ["img_url" => $path1],
+                ["img_url" => $path2],
+            ]);
+            
+            return response()->json([
+                "message" => "Product updated successfully",
+            ]);
     }
 
     /**
@@ -137,6 +115,28 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try{
+        $product = Product::findOrFail($id);
+        $product->load(["images", "productDetails", "reviews"]);
+        $product->productDetails()->delete();
+        foreach($product->images as $image){
+            if(Storage::disk('public')->exists($image->img_url)){
+                Storage::disk('public')->delete($image->img_url);
+            }
+        }
+        $product->reviews()->delete();
+        $product->images()->delete();
+        $product->delete();
+        return [
+         'success'=> true,
+         'message'=> 'Product with id '.$id.' has been deleted seccessfully'  
+        ];
+    }
+        catch(\Exception $e){
+            return response()->json([
+                "message" => "Product deletion failed",
+                "error" => $e->getMessage(),
+            ], 500);
+        }
     }
 }
