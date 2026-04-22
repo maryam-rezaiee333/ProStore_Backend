@@ -68,8 +68,8 @@ class productController extends Controller
         // return response()->json([
         //     "data"=> $products,
         // ]);
-        $products = Product::findOrFail($id)->with(['images', 'productDetails'])->get();
-        return new productResource($products);
+        $product = Product::findOrFail($id)->with(['images', 'productDetails'])->get();
+        return new productResource($product);
     }
 
     /**
