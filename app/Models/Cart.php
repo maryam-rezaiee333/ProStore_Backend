@@ -9,6 +9,8 @@ class Cart extends Model
 {
     /** @use HasFactory<\Database\Factories\CartFactory> */
     use HasFactory;
+    
+    // Relationships
     public function user() {
         return $this->belongsTo(User::class);
     }

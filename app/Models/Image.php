@@ -14,6 +14,8 @@ class Image extends Model
     ];
     /** @use HasFactory<\Database\Factories\ImageFactory> */
     use HasFactory;
+
+// Relationships
     public function imageable(){
         return $this->morphTo();
     }

@@ -17,7 +17,7 @@ class Product extends Model
 
     // Relationships
     public function productDetails(){
-        return $this->hasOne(ProductDetail::class, 'product_id'); 
+        return $this->hasOne(Product_Deltail::class, 'product_id'); 
     }
     public function images(){
         return $this->morphMany(Image::class, 'imageable'); 

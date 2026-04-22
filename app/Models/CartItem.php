@@ -9,6 +9,8 @@ class CartItem extends Model
 {
     /** @use HasFactory<\Database\Factories\CartItemFactory> */
     use HasFactory;
+
+ // Relationships
     public function product(){
         return $this->belongsTo(Product::class);
     }
