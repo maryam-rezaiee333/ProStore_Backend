@@ -15,7 +15,7 @@ class productController extends Controller
      */
     public function index()
     {
-        $product = Product::with(['productDetails' , 'images'])->paginate(5);
+        $product = Product::with(['productDetails' , 'images', 'reviews'])->orderBy('created_at', 'desc')->paginate(10);
         return productResource::collection($product);
     }
 
@@ -37,11 +37,13 @@ class productController extends Controller
             "catagory" => $request->cat,
         ]);
         $images = [];
+        $image_path1 = null;
+        $image_path2 = null;
         if($request->hasFile('image1')){
-           $images[] = ["img_url" => $request->file('image1')->store('images','public')];
+           $images[] = ["image_url" => $request->file('image1')->store('images','public')];
         }
         if($request->hasFile('image2')){
-           $images[] = ["img_url" => $request->file('image2')->store('images','public')];
+           $images[] = ["image_url" => $request->file('image2')->store('images','public')];
         }
         if(!empty($images)){
             $product->images()->createMany($images);
@@ -64,20 +66,21 @@ class productController extends Controller
      */
     public function show(string $id)
     {
-        // $products = Product::findOrFail($id);
-        // return response()->json([
-        //     "data"=> $products,
-        // ]);
-        try{
-        $product = Product::findOrFail($id)->with(['images', 'productDetails'])->get();
-         return new productResource($product);
-    }
-         catch(\Exception $error){
-            return response()->json([
-                "message" => "Product deletion failed",
-                "error" => $error->getMessage(),
-            ], 500);
-         }
+        $products = Product::findOrFail($id);
+        return response()->json([
+            "data"=> $products,
+        ]);
+        // With Try & Catch
+        //     try{
+        //     $product = Product::findOrFail($id)->with(['images', 'productDetails'])->get();
+        //      return new productResource($product);
+        // }
+        //      catch(\Exception $error){
+        //         return response()->json([
+        //             "message" => "Product deletion failed",
+        //             "error" => $error->getMessage(),
+        //          ], 500);
+        //      }
     }
 
     /**
