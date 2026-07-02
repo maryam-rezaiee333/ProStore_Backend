@@ -24,14 +24,14 @@ class ProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
-            'name'=> ['required' ,'string','min:3', Rule::unique('products','name')],
-            'price'=> 'required|integer|min:10|max:19000',
-            'stock'=> 'required|integer|min:1|max:200',
-            'brand'=> 'required|string',
-            'description'=> 'required|string|min:10',
-            'category'=> 'required|string|min:10',
-            'image_url'=>'required|image|mimies:jpg, png, jpeg, gif, webp |'
+            "name" => ["required","string","min:3",Rule::unique('products','name')],
+            "price" => "required|numeric|max:150000",
+            "stock" => "required|integer|max:200",
+            "description" => "required|string|min:10",
+            "brand" => "required|string",
+            "category" => "required|string",
+            "image1" => "required|image|mimes:jpg,png,jpeg,webp",
+            "image2" => "required|image|mimes:jpg,png,jpeg,webp"
         ];
     }
 }
